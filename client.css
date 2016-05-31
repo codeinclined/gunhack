@@ -1,0 +1,21 @@
+body {
+    background-color: black;
+    color: white;
+}
+
+#gunhackCanvas {
+    border: 1px solid red;
+    margin-bottom: 10px;
+}
+
+.debug label {
+    display: inline-block;
+    width: 150px;
+    text-align: right;
+    margin-right: 10px;
+}
+
+.debug input {
+    width: 50ch;
+    margin-bottom: 5px;
+}
