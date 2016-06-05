@@ -73,7 +73,6 @@ gh.Renderer.prototype.RenderMap = function(map)
         var rayAngle = startAngle - dAngle * column;
         var sampleX;
 
-        console.log(rayAngle);
         curRay = map.CastRay(this.x, this.y, rayAngle);
 
         renderHeight = this.canvas.height * map.tilesize /

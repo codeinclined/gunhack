@@ -31,7 +31,7 @@
 var game = new gh.Game(document.getElementById("gunhackCanvas"));
 
 //TEMP: Just seeing if drawing works. This stuff should be initialized properly
-game.renderer.SetCamera(512, 512, 1, Math.PI / 3);
+game.renderer.SetCamera(512, 512, .25, Math.PI / 3);
 
 //TODO: DEFINITELY CHANGE THIS
 /*
