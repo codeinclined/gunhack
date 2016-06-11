@@ -33,15 +33,17 @@ gh.Game = function(canvas, maxFPS)
 {
     //TODO: Fill in appropriate beginning; this is just a hack to test
     this._boundGameLoop = this.GameLoop.bind(this);
-    this.map = new gh.Map();
-    this.player = new gh.Actor(512, 512, gh.PIm3d2,
-        this.CollisionTest.bind(this), 64, 64);
+    this.map = new gh.Map(1, undefined, undefined, undefined, 40, 40);
+    this.player = new gh.Actor(520, 520, gh.PIm3d2,
+        this.CollisionTest.bind(this), 64.1, 63.9);
     this.renderer = new gh.Renderer(canvas, 60);
     this.frameInterval = 1000 / (maxFPS !== undefined ? maxFPS : 60);
     this.dTime = 0;
     this.lastFrameTime = 0;
-    this.debugInterval = 1000 / 2;
-    this.lastDebugTime = 0;
+
+    this.debugger = new gh.Debugger(1.5);
+    this.projFPSWatch = this.debugger.AddWatch(
+        document.getElementById("inpProjFPS"));
 
     gh.Keyboard.Initialize();
     this.input = new gh.Input(this.player, gh.Keyboard);
@@ -70,11 +72,8 @@ gh.Game.prototype.GameLoop = function()
         this.lastFrameTime = curTime - (this.dTime % this.frameInterval);
 
         //TODO: Add check for debug mode
-        if (curTime > this.lastDebugTime + this.debugInterval)
-        {
-            gh.Debug.projFPS.value = 1000 / (Date.now() - curTime);
-            this.lastDebugTime = this.lastFrameTime;
-        }
+        this.projFPSWatch.values.push(1000 / (Date.now() - curTime));
+        this.debugger.Update(curTime);
     }
 
     return;

@@ -29,6 +29,58 @@
  * SOFTWARE.
 */
 
+//TODO: Fix this to where you don't have to have the needed DOM elements
+/*
 gh.Debug = {
-    projFPS: document.getElementById("inpProjFPS")
+    interval: 500,
+    lastDebugTime: 0,
+    projFPS: document.getElementById("inpProjFPS"),
+    projFPSCounter: 0
+};
+
+gh.Debug.
+*/
+
+gh.Debugger = function(updatesPerSecond)
+{
+    this.updateInterval = (updatesPerSecond !== undefined) ?
+        1000 / updatesPerSecond : 500;
+    this.lastDebugTime = 0;
+    this.watches = [];
+};
+
+gh.Debugger.prototype.AddWatch = function(domElement)
+{
+    var watch = {
+
+        values: [],
+        element: domElement
+    };
+    this.watches.push(watch);
+    return watch;
+};
+
+gh.Debugger.prototype.Update = function(curTime)
+{
+    if (curTime === undefined)
+        curTime = Date.now();
+
+    if (curTime > this.lastDebugTime + this.updateInterval)
+    {
+        for (var i = 0; i < this.watches.length; i++)
+        {
+            if (this.watches[i].values.length === 0)
+            {
+                this.watches[i].element.value = "Unknown";
+                continue;
+            }
+
+            this.watches[i].element.value = (this.watches[i].values.reduce(
+                function(a,b) { return a+b; }) / this.watches[i].values.length)
+                .toFixed(2);
+            this.watches[i].values.length = 0;
+        }
+
+        this.lastDebugTime = curTime;
+    }
 };

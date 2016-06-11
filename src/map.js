@@ -42,7 +42,7 @@ gh.Map = function(level, texturemap, floor, ceiling, width, height, tilesize)
 
     //TODO: Add logic to load tilemaps based on the level ranges
     this.texturemap = new gh.Texturemap((texturemap === undefined ?
-        "/assets/texturemaps/offices.jpg" : texturemap));
+        "assets/texturemaps/offices.jpg" : texturemap));
 
     this.tiles = this.generate_tiles();
 };
@@ -87,7 +87,7 @@ gh.Map.prototype.CastRay = function(x, y, angle, maxSteps)
     if (x === undefined || y === undefined || angle === undefined)
         return null;
     if (maxSteps === undefined)
-        maxSteps = 32;
+        maxSteps = 40;
 
     angle = gh.NormalizeAngle(angle);
     if (angle == Math.PI || gh.PIm3d2) // Prevent infinity
@@ -101,8 +101,8 @@ gh.Map.prototype.CastRay = function(x, y, angle, maxSteps)
         -this.tilesize : this.tilesize);
     dY = -dX * TANangle;
 
-    curX = (dX < 0) ? (this.tilesize * Math.floor(x / this.tilesize) - 0.001) :
-        (this.tilesize * Math.ceil(x / this.tilesize) + 0.001);
+    curX = this.tilesize * (dX < 0 ? Math.floor(x / this.tilesize) :
+        Math.ceil(x / this.tilesize));
     curY = y - (curX - x) * TANangle;
 
     for (step = 0; step < maxSteps &&
@@ -110,7 +110,7 @@ gh.Map.prototype.CastRay = function(x, y, angle, maxSteps)
          curY > 0 && curY < this.worldHeight;
          curX += dX, curY += dY, step++)
     {
-        tileX = Math.floor(curX / this.tilesize);
+        tileX = Math.floor((dX < 0 ? -0.001 : 0.001) + curX / this.tilesize);
         tileY = Math.floor(curY / this.tilesize);
         curTile = this.tiles[tileY][tileX];
 
@@ -132,8 +132,8 @@ gh.Map.prototype.CastRay = function(x, y, angle, maxSteps)
     dY = (angle > 0 && angle < Math.PI) ? -this.tilesize : this.tilesize;
     dX = -dY / TANangle;
 
-    curY = (dY < 0 ? (this.tilesize * Math.floor(y / this.tilesize) - 0.001) :
-        (this.tilesize * Math.ceil(y / this.tilesize) + 0.001));
+    curY = this.tilesize * (dY < 0 ? Math.floor(y / this.tilesize) :
+        Math.ceil(y / this.tilesize));
     curX = x - (curY - y) / TANangle;
 
     for (step = 0;  step < maxSteps &&
@@ -144,7 +144,7 @@ gh.Map.prototype.CastRay = function(x, y, angle, maxSteps)
         var dto;
 
         tileX = Math.floor(curX / this.tilesize);
-        tileY = Math.floor(curY / this.tilesize);
+        tileY = Math.floor((dY < 0 ? -0.001 : 0.001) + curY / this.tilesize);
         curTile = this.tiles[tileY][tileX];
 
         if (curTile.type > 0)

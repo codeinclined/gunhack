@@ -29,7 +29,7 @@
  * SOFTWARE.
 */
 
-gh.Renderer = function(canvas, fov)
+gh.Renderer = function(canvas, fov, drawDistance, fogDepth)
 {
     //TODO: Add check for valid canvas
     this.canvas = canvas;
@@ -38,11 +38,15 @@ gh.Renderer = function(canvas, fov)
     else
         throw "Cannot get a 2D canvas context.";
     this.fov = (fov === undefined ? 60 : fov);
+    this.drawDistance = (drawDistance !== undefined ? drawDistance : 2560);
+    this.fogDepth = (fogDepth !== undefined ? fogDepth : 560);
     this.x = 0;
     this.y = 0;
     this.angle = 0;
     this.depthBuffer = [];
 };
+
+
 
 gh.Renderer.prototype.SetCamera = function(x, y, angle, fov)
 {
@@ -77,10 +81,12 @@ gh.Renderer.prototype.RenderMap = function(map)
         if (curRay === null)
             continue;
 
+        this.depthBuffer[column] =
+            curRay.distToOrigin * Math.cos(this.angle - rayAngle);
         renderHeight = this.canvas.height * map.tilesize /
-            (curRay.distToOrigin * Math.cos(this.angle - rayAngle));
+            this.depthBuffer[column];
         halfRenderHeight = renderHeight / 2;
-        sampleX = map.texturemap.SampleColumn(curRay.sample, curRay.wallType);
+        sampleX = map.texturemap.SampleColumn(curRay.sample,curRay.wallType-1);
 
         // Draw a plain line if an error arises in sampling the texture
         if (sampleX === null)
@@ -96,6 +102,20 @@ gh.Renderer.prototype.RenderMap = function(map)
                 map.texturemap.atlas.height, column + 0.5, halfCanvasHeight -
                 halfRenderHeight, 1, renderHeight);
         }
+
+        //TODO: Change rendering to draw to a seperate canvas. Double-buffering.
+
+/*
+        // Shade the column
+        //TODO: Optimize away the divide and profile this!!!
+        columnPixels = this.ctx.getImageData(column + 0.5,
+            0.5 + halfCanvasHeight - halfRenderHeight, 1, renderHeight);
+        for (var pixel = 0; pixel < columnPixels.data.length / 4; pixel++)
+        {
+            // A
+            columnPixels.data[pixel * 4 + 3]
+        }
+*/
     }
 
     this.ctx.stroke();

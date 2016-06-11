@@ -6,6 +6,7 @@ body {
 #gunhackCanvas {
     border: 1px solid red;
     margin-bottom: 10px;
+    transform: translateZ(0);
 }
 
 .debug label {

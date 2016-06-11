@@ -49,7 +49,10 @@ gh.Keyboard = {
 
             action = gh.Keyboard.keyAssignments[e.keyCode];
             if (action !== undefined && action[0] in gh.Keyboard.state)
+            {
+                e.preventDefault();
                 gh.Keyboard.state[action[0]] = action[1];
+            }
         }, false);
 
         window.addEventListener("keyup", function(e) {
@@ -71,6 +74,17 @@ gh.Keyboard = {
 
         gh.Keyboard.initialized = true;
     },
+};
+
+//TODO: Implement touch for phones
+gh.Touch = {
+    initialized: false,
+    state: {
+        "moveForward": 0,
+        "rotate": 0,
+        "strafe": 0,
+        "debug": 0
+    }
 };
 
 gh.Input = function(avatar, devices)
