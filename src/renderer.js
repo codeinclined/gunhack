@@ -42,7 +42,7 @@ gh.Renderer = function(canvas, fov)
     this.y = 0;
     this.angle = 0;
     this.depthBuffer = [];
-}
+};
 
 gh.Renderer.prototype.SetCamera = function(x, y, angle, fov)
 {
@@ -50,14 +50,14 @@ gh.Renderer.prototype.SetCamera = function(x, y, angle, fov)
     if (y !== undefined) this.y = y;
     if (angle !== undefined) this.angle = angle;
     if (fov !== undefined) this.fov = fov;
-}
+};
 
 gh.Renderer.prototype.RenderMap = function(map)
 {
     // Clean up variable locations and initialization
     var startAngle, dAngle, renderHeight, halfRenderHeight, curRay;
     var halfCanvasHeight = this.canvas.height / 2;
-    if (!map instanceof gh.Map)
+    if (!(map instanceof gh.Map))
         throw "RenderMap() passed parameter not derived from gh.Map!";
 
     startAngle = this.angle + this.fov / 2;
@@ -74,14 +74,16 @@ gh.Renderer.prototype.RenderMap = function(map)
         var sampleX;
 
         curRay = map.CastRay(this.x, this.y, rayAngle);
+        if (curRay === null)
+            continue;
 
         renderHeight = this.canvas.height * map.tilesize /
             (curRay.distToOrigin * Math.cos(this.angle - rayAngle));
         halfRenderHeight = renderHeight / 2;
-        sampleX = map.texturemap.SampleColumn(curRay.sample, curRay.tileType);
+        sampleX = map.texturemap.SampleColumn(curRay.sample, curRay.wallType);
 
         // Draw a plain line if an error arises in sampling the texture
-        if (sampleX == null)
+        if (sampleX === null)
         {
             this.ctx.moveTo(column + 0.5, 0.5 +
                 halfCanvasHeight - halfRenderHeight);
@@ -91,10 +93,28 @@ gh.Renderer.prototype.RenderMap = function(map)
         else
         {
             this.ctx.drawImage(map.texturemap.atlas, 0.5 + sampleX, 0, 1,
-                map.texturemap.atlas.height, column + 0.5, halfCanvasHeight, 1,
-                renderHeight);
+                map.texturemap.atlas.height, column + 0.5, halfCanvasHeight -
+                halfRenderHeight, 1, renderHeight);
         }
     }
 
     this.ctx.stroke();
-}
+};
+
+gh.Renderer.prototype.RenderBackground = function(ceiling, floor)
+{
+    //TODO: Pre-calculate half canvas height and width
+    this.ctx.fillStyle = ceiling;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height / 2);
+    this.ctx.fillStyle = floor;
+    this.ctx.fillRect(0, this.canvas.height / 2,
+        this.canvas.width, this.canvas.height);
+};
+
+gh.Renderer.prototype.RenderFrame = function(game)
+{
+    this.RenderBackground(game.map.ceiling, game.map.floor);
+    this.SetCamera(game.player.x, game.player.y,
+        game.player.angle, gh.PId3);
+    this.RenderMap(game.map);
+};

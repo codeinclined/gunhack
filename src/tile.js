@@ -31,4 +31,4 @@
 gh.Tile = function(tileType)
 {
     this.type = tileType;
-}
+};

@@ -31,6 +31,7 @@
 gh.PIm2 = Math.PI * 2;
 gh.PId2 = Math.PI / 2;
 gh.PIm3d2 = 3 * gh.PId2;
+gh.PId3 = Math.PI / 3;
 
 gh.NormalizeAngle = function(angle)
 {
@@ -40,4 +41,29 @@ gh.NormalizeAngle = function(angle)
         angle -= gh.PIm2;
 
     return angle;
-}
+};
+
+gh.ClampValue = function(value, min, max)
+{
+    if (min === undefined)
+        min = -1;
+    if (max === undefined)
+        max = 1;
+    if (value > max)
+        return max;
+    if (value < min)
+        return min;
+    return value;
+};
+
+gh.Cardinal = {
+    "ALL": -1,
+    "E":    0,
+    "N":    1,
+    "W":    2,
+    "S":    3,
+    "NE":   4,
+    "NW":   5,
+    "SW":   6,
+    "SE":   7
+};

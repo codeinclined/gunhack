@@ -2,9 +2,9 @@
  * Gunhack
  * A procedurally generated FPS using raycasting
  *
- * entrypoint.js
+ * avatar.js
  *
- * This is the entry point code that actually runs the game.
+ * The Avatar object is an actor which updates its position each frame.
  *
  * Copyright (c) 2016 Joshua W Taylor
  * This code is licensed under The MIT License.
@@ -28,16 +28,3 @@
  * SOFTWARE.
 */
 
-var game = new gh.Game(document.getElementById("gunhackCanvas"));
-
-//TEMP: Just seeing if drawing works. This stuff should be initialized properly
-//game.renderer.SetCamera(512, 512, 0.25, Math.PI / 3);
-
-//TODO: DEFINITELY CHANGE THIS
-/*
-while (game.map.texturemap.ready == false)
-    console.log("Waiting for assets to load...");
-*/
-//game.renderer.RenderMap(game.map);
-
-requestAnimationFrame(game.GameLoop.bind(game));

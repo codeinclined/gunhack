@@ -2,9 +2,10 @@
  * Gunhack
  * A procedurally generated FPS using raycasting
  *
- * entrypoint.js
+ * debug.js
  *
- * This is the entry point code that actually runs the game.
+ * Provides the Debug object containing references to DOM objects
+ * used for debugging the game.
  *
  * Copyright (c) 2016 Joshua W Taylor
  * This code is licensed under The MIT License.
@@ -28,16 +29,6 @@
  * SOFTWARE.
 */
 
-var game = new gh.Game(document.getElementById("gunhackCanvas"));
-
-//TEMP: Just seeing if drawing works. This stuff should be initialized properly
-//game.renderer.SetCamera(512, 512, 0.25, Math.PI / 3);
-
-//TODO: DEFINITELY CHANGE THIS
-/*
-while (game.map.texturemap.ready == false)
-    console.log("Waiting for assets to load...");
-*/
-//game.renderer.RenderMap(game.map);
-
-requestAnimationFrame(game.GameLoop.bind(game));
+gh.Debug = {
+    projFPS: document.getElementById("inpProjFPS")
+};

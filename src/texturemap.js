@@ -45,7 +45,7 @@ gh.Texturemap = function(url)
         self.elementSize = self.atlas.height;
         self.ready = true;
     };
-}
+};
 
 gh.Texturemap.prototype.SampleColumn = function(sample, index)
 {
@@ -57,5 +57,5 @@ gh.Texturemap.prototype.SampleColumn = function(sample, index)
         sample = 1;
     else if (sample < 0)
         sample = 0;
-    return Math.floor(this.elementSize * index + sample / this.elementSize);
-}
+    return Math.floor(this.elementSize * index + sample * this.elementSize);
+};
