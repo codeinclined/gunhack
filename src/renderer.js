@@ -29,17 +29,33 @@
  * SOFTWARE.
 */
 
-gh.Renderer = function(canvas, fov, drawDistance, fogDepth)
+gh.Renderer = function(canvas, fov, drawDistance, fogDistance)
 {
     //TODO: Add check for valid canvas
-    this.canvas = canvas;
+    this.screenCanvas = canvas;
+    if (this.screenCanvas.getContext)
+        this.screenCtx = this.screenCanvas.getContext('2d');
+    else
+        throw "Cannot get a 2D canvas context.";
+    this.canvas = document.createElement("canvas");
+    this.canvas.width  = this.screenCanvas.width;
+    this.canvas.height = this.screenCanvas.height;
     if (this.canvas.getContext)
         this.ctx = this.canvas.getContext('2d');
     else
         throw "Cannot get a 2D canvas context.";
+    this.filterCanvas = document.createElement("canvas");
+    this.filterCanvas.width  = this.screenCanvas.width;
+    this.filterCanvas.height = 1;
+    if (this.filterCanvas.getContext)
+        this.filterCtx = this.filterCanvas.getContext('2d');
+    else
+        throw "Cannot get a 2D canvas context.";
+
+    this.filterData = this.filterCtx.createImageData(this.filterCanvas.width,1);
     this.fov = (fov === undefined ? 60 : fov);
-    this.drawDistance = (drawDistance !== undefined ? drawDistance : 2560);
-    this.fogDepth = (fogDepth !== undefined ? fogDepth : 560);
+    this.drawDistance = (drawDistance !== undefined ? drawDistance : 3600);
+    this.fogDistance = (fogDistance !== undefined ? fogDistance : 2400);
     this.x = 0;
     this.y = 0;
     this.angle = 0;
@@ -61,6 +77,7 @@ gh.Renderer.prototype.RenderMap = function(map)
     // Clean up variable locations and initialization
     var startAngle, dAngle, renderHeight, halfRenderHeight, curRay;
     var halfCanvasHeight = this.canvas.height / 2;
+
     if (!(map instanceof gh.Map))
         throw "RenderMap() passed parameter not derived from gh.Map!";
 
@@ -103,38 +120,53 @@ gh.Renderer.prototype.RenderMap = function(map)
                 halfRenderHeight, 1, renderHeight);
         }
 
-        //TODO: Change rendering to draw to a seperate canvas. Double-buffering.
+        this.ctx.fillStyle = "rgba(0, 0, 0," + ((curRay.orientation === 0 ||
+            curRay.orientation == 2) ? 0.25 : 0).toString() + ")";
+        this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
+            halfRenderHeight, 1, renderHeight);
+        this.ctx.fillStyle = "rgba(0, 0, 0," +
+            gh.ClampValue(//(curRay.orientation % 2 > 0 ? 0.3 : 0) +
+            (this.depthBuffer[column] - this.fogDistance) /
+            (this.drawDistance - this.fogDistance)).toString() + ")";
+        this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
+            halfRenderHeight, 1, renderHeight);
 
-/*
-        // Shade the column
-        //TODO: Optimize away the divide and profile this!!!
-        columnPixels = this.ctx.getImageData(column + 0.5,
-            0.5 + halfCanvasHeight - halfRenderHeight, 1, renderHeight);
-        for (var pixel = 0; pixel < columnPixels.data.length / 4; pixel++)
-        {
-            // A
-            columnPixels.data[pixel * 4 + 3]
-        }
-*/
     }
-
     this.ctx.stroke();
 };
 
+// Renders floor and ceiling to the screen canvas
 gh.Renderer.prototype.RenderBackground = function(ceiling, floor)
 {
+    var ceilGrad, floorGrad;
+    var halfCanvasHeight = this.screenCanvas.height / 2;
     //TODO: Pre-calculate half canvas height and width
-    this.ctx.fillStyle = ceiling;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height / 2);
-    this.ctx.fillStyle = floor;
-    this.ctx.fillRect(0, this.canvas.height / 2,
-        this.canvas.width, this.canvas.height);
+    ceilGrad = this.screenCtx.createLinearGradient(0,0,0,halfCanvasHeight);
+    ceilGrad.addColorStop(0, ceiling);
+    ceilGrad.addColorStop(1, "black");
+    this.screenCtx.fillStyle = ceilGrad;
+    this.screenCtx.fillRect(0, 0, this.screenCanvas.width,
+        this.screenCanvas.height / 2);
+
+    floorGrad = this.screenCtx.createLinearGradient(0,halfCanvasHeight,0,
+        this.screenCanvas.height);
+    floorGrad.addColorStop(0, "black");
+    floorGrad.addColorStop(1, floor);
+    this.screenCtx.fillStyle = floorGrad;
+    this.screenCtx.fillRect(0, this.screenCanvas.height / 2,
+        this.screenCanvas.width, this.screenCanvas.height);
 };
 
 gh.Renderer.prototype.RenderFrame = function(game)
 {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.filterData = this.filterCtx.createImageData(this.filterCanvas.width,1);
+
     this.RenderBackground(game.map.ceiling, game.map.floor);
+
     this.SetCamera(game.player.x, game.player.y,
         game.player.angle, gh.PId3);
+
     this.RenderMap(game.map);
+    this.screenCtx.drawImage(this.canvas, 0, 0);
 };

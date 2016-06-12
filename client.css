@@ -6,6 +6,9 @@ body {
 #gunhackCanvas {
     border: 1px solid red;
     margin-bottom: 10px;
+}
+
+canvas {
     transform: translateZ(0);
 }
 

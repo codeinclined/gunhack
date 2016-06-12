@@ -157,7 +157,7 @@ gh.Map.prototype.CastRay = function(x, y, angle, maxSteps)
 
             retObject.distToOrigin = dto;
             retObject.wallType = curTile.type;
-            retObject.orientation = (dX < 0) ? 1 : 3;
+            retObject.orientation = (dY < 0) ? 1 : 3;
             retObject.sample = (tileX * this.tilesize +
                 this.tilesize - curX) / this.tilesize;
             retObject.x = curX;

@@ -35,7 +35,7 @@ gh.Game = function(canvas, maxFPS)
     this._boundGameLoop = this.GameLoop.bind(this);
     this.map = new gh.Map(1, undefined, undefined, undefined, 40, 40);
     this.player = new gh.Actor(520, 520, gh.PIm3d2,
-        this.CollisionTest.bind(this), 64.1, 63.9);
+        this.CollisionTest.bind(this), 64.1, 36);
     this.renderer = new gh.Renderer(canvas, 60);
     this.frameInterval = 1000 / (maxFPS !== undefined ? maxFPS : 60);
     this.dTime = 0;

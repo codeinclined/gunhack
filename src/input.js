@@ -108,5 +108,5 @@ gh.Input.prototype.UpdateAvatar = function()
     if (this.state.moveForward !== 0)
         this.avatar.Move(this.state.moveForward, 0);
     if (this.state.rotate !== 0)
-        this.avatar.Rotate(-this.state.rotate / 15);
+        this.avatar.Rotate(-this.state.rotate / 26);
 };
