@@ -4,17 +4,31 @@
     <link rel="stylesheet" href="client.css">
     <body>
         <canvas id="gunhackCanvas" width="860" height="630"></canvas>
+        <button onclick="goFullscreen()">Fullscreen</button><br/><br/>
         <div class="debug">
+<!--
         <label>True FPS</label>
         <input type="text" disabled="true" id="inpTrueFPS" /><br />
+-->
         <label>Projected FPS</label>
         <input type="text" disabled="true" id="inpProjFPS" /><br />
+<!--
         <label>Walls Texture Map</label>
         <input type="text" disabled="true" id="inpWallTexturemap" /><br />
-        <label>Map Data</label>
+-->
+<!--        <label>Map Data</label>
         <textarea rows="21" cols="80" id="taMapData" disabled="true"></textarea>
+-->
         <br/>
         </div>
         <script src="dist/gunhack.js"></script>
+        <script>
+            function goFullscreen()
+            {
+                var canvas = document.getElementById("gunhackCanvas");
+                if (canvas.webkitRequestFullScreen)
+                    canvas.webkitRequestFullScreen();
+            }
+        </script>
     </body>
 </html>

@@ -34,7 +34,7 @@ gh.Keyboard = {
         "moveForward": 0,
         "rotate": 0,
         "strafe": 0,
-        "debug": 0
+        "debug": 0,
     },
     keyAssignments: [],
     Initialize: function() {

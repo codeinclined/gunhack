@@ -60,9 +60,41 @@ gh.Renderer = function(canvas, fov, drawDistance, fogDistance)
     this.y = 0;
     this.angle = 0;
     this.depthBuffer = [];
+    // Used for returning from fullscreen
+    this.oldWidth  = this.screenCanvas.width;
+    this.oldHeight = this.screenCanvas.height;
+    document.addEventListener("webkitfullscreenchange",
+        this.ToggleFullscreen.bind(this), false);
+    document.addEventListener("mozfullscreenchange",
+        this.ToggleFullscreen.bind(this), false);
+    document.addEventListener("MSFullscreenChange",
+        this.ToggleFullscreen.bind(this), false);
+    document.addEventListener("fullscreenchange",
+        this.ToggleFullscreen.bind(this), false);
+    this.fullscreen = false;
 };
 
-
+gh.Renderer.prototype.ToggleFullscreen = function()
+{
+    if (document.webkitIsFullScreen || document.mozFullScreen ||
+        document.msFullscreenElement !== null)
+    {
+        if (!this.fullscreen)
+        {
+            this.screenCanvas.width  = this.canvas.width = screen.width;
+            this.screenCanvas.height = this.canvas.height = screen.height;
+            this.filterCanvas.width  = this.canvas.width;
+            this.fullscreen = true;
+        }
+        else
+        {
+            this.screenCanvas.width  = this.canvas.width  = this.oldWidth;
+            this.screenCanvas.height = this.canvas.height = this.oldHeight;
+            this.filterCanvas.width  = this.canvas.width;
+            this.fullscreen = false;
+        }
+    }
+};
 
 gh.Renderer.prototype.SetCamera = function(x, y, angle, fov)
 {
@@ -119,12 +151,6 @@ gh.Renderer.prototype.RenderMap = function(map)
                 map.texturemap.atlas.height, column + 0.5, halfCanvasHeight -
                 halfRenderHeight, 1, renderHeight);
         }
-
-        //TODO: Optimize this
-        //      It might be faster to go back to the height 1 canvas idea
-        //      and draw it to renderheight. String concat is SLOW.
-        //      Also, storing strings for orientation based darkness
-        //      will be faster.
 
         this.ctx.fillStyle = "#000000";
         this.ctx.globalAlpha =
