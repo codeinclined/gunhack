@@ -120,17 +120,24 @@ gh.Renderer.prototype.RenderMap = function(map)
                 halfRenderHeight, 1, renderHeight);
         }
 
-        this.ctx.fillStyle = "rgba(0, 0, 0," + ((curRay.orientation === 0 ||
-            curRay.orientation == 2) ? 0.25 : 0).toString() + ")";
-        this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
-            halfRenderHeight, 1, renderHeight);
-        this.ctx.fillStyle = "rgba(0, 0, 0," +
-            gh.ClampValue(//(curRay.orientation % 2 > 0 ? 0.3 : 0) +
-            (this.depthBuffer[column] - this.fogDistance) /
-            (this.drawDistance - this.fogDistance)).toString() + ")";
-        this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
-            halfRenderHeight, 1, renderHeight);
+        //TODO: Optimize this
+        //      It might be faster to go back to the height 1 canvas idea
+        //      and draw it to renderheight. String concat is SLOW.
+        //      Also, storing strings for orientation based darkness
+        //      will be faster.
 
+        this.ctx.fillStyle = "#000000";
+        this.ctx.globalAlpha =
+            ((curRay.orientation === 0 ||
+            curRay.orientation == 2) ? 0.25 : 0);
+        this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
+            halfRenderHeight, 1, renderHeight);
+        this.ctx.globalAlpha = gh.ClampValue(
+            (this.depthBuffer[column] - this.fogDistance) /
+            (this.drawDistance - this.fogDistance));
+        this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
+            halfRenderHeight, 1, renderHeight);
+        this.ctx.globalAlpha = 1.0;
     }
     this.ctx.stroke();
 };
