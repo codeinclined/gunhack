@@ -54,7 +54,7 @@ gh.Renderer = function(canvas, fov, drawDistance, fogDistance)
 
     this.filterData = this.filterCtx.createImageData(this.filterCanvas.width,1);
     this.fov = (fov === undefined ? 60 : fov);
-    this.drawDistance = (drawDistance !== undefined ? drawDistance : 3600);
+    this.drawDistance = (drawDistance !== undefined ? drawDistance : 3200);
     this.fogDistance = (fogDistance !== undefined ? fogDistance : 2400);
     this.x = 0;
     this.y = 0;
@@ -102,6 +102,45 @@ gh.Renderer.prototype.SetCamera = function(x, y, angle, fov)
     if (y !== undefined) this.y = y;
     if (angle !== undefined) this.angle = angle;
     if (fov !== undefined) this.fov = fov;
+};
+
+gh.Renderer.prototype.RenderMinimap = function(map, x, y, width, height)
+{
+    var minimapCanvas = map.GetMinimapCanvas();
+    var aspectRatio = minimapCanvas.width / minimapCanvas.height;
+    var oldCompositeOp = this.ctx.globalCompositeOperation;
+    var minimapPlayerX, minimapPlayerY;
+
+    if (x === undefined || y === undefined ||
+        width === undefined || height === undefined)
+        throw "Tried to render minimap without dimensions";
+
+    if (aspectRatio < 1)
+    {
+        width *= aspectRatio;
+    }
+    if (aspectRatio > 1)
+    {
+        height /= aspectRatio;
+    }
+
+    this.ctx.globalCompositeOperation = "source-over";
+    this.ctx.drawImage(minimapCanvas, x, y, width, height);
+
+    // Draw player on minimap
+    minimapPlayerX = this.x / map.worldWidth  * width;
+    minimapPlayerY = this.y / map.worldHeight * height;
+
+    this.ctx.strokeStyle = "rgba(0,255,0,0.365)";
+    this.ctx.beginPath();
+    this.ctx.moveTo(minimapPlayerX, minimapPlayerY);
+    this.ctx.arc(minimapPlayerX, minimapPlayerY, 10,
+        -this.angle + this.fov / 2,
+        -this.angle - this.fov / 2, true);
+    this.ctx.lineTo(minimapPlayerX, minimapPlayerY);
+    this.ctx.stroke();
+
+    this.ctx.globalCompositeOperation = oldCompositeOp;
 };
 
 gh.Renderer.prototype.RenderMap = function(map)
@@ -152,17 +191,24 @@ gh.Renderer.prototype.RenderMap = function(map)
                 halfRenderHeight, 1, renderHeight);
         }
 
+        // Shading
         this.ctx.fillStyle = "#000000";
-        this.ctx.globalAlpha =
-            ((curRay.orientation === 0 ||
-            curRay.orientation == 2) ? 0.25 : 0);
-        this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
-            halfRenderHeight, 1, renderHeight);
-        this.ctx.globalAlpha = gh.ClampValue(
-            (this.depthBuffer[column] - this.fogDistance) /
-            (this.drawDistance - this.fogDistance));
-        this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
-            halfRenderHeight, 1, renderHeight);
+        // Wall orientation
+        if (curRay.orientation === 0 || curRay.orientation == 2)
+        {
+            this.ctx.globalAlpha = 0.25;
+            this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
+                halfRenderHeight, 1, renderHeight);
+        }
+        // Distance shading
+        if (this.depthBuffer[column] > this.fogDistance)
+        {
+            this.ctx.globalAlpha = gh.ClampValue(
+                (this.depthBuffer[column] - this.fogDistance) /
+                (this.drawDistance - this.fogDistance));
+            this.ctx.fillRect(column + 0.5, 0.5 + halfCanvasHeight -
+                halfRenderHeight, 1, renderHeight);
+        }
         this.ctx.globalAlpha = 1.0;
     }
     this.ctx.stroke();
@@ -197,9 +243,10 @@ gh.Renderer.prototype.RenderFrame = function(game)
 
     this.RenderBackground(game.map.ceiling, game.map.floor);
 
-    this.SetCamera(game.player.x, game.player.y,
-        game.player.angle, gh.PId3);
+    this.SetCamera(game.player.x, game.player.y, game.player.angle);
 
     this.RenderMap(game.map);
+    this.RenderMinimap(game.map, 0, 0, 250, 250);
+
     this.screenCtx.drawImage(this.canvas, 0, 0);
 };

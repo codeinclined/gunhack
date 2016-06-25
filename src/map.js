@@ -45,30 +45,10 @@ gh.Map = function(level, texturemap, floor, ceiling, width, height, tilesize)
         "assets/texturemaps/offices.jpg" : texturemap));
 
     this.tiles = this.generate_tiles();
-};
-
-gh.Map.prototype.generate_tiles = function()
-{
-    var retTiles = [];
-
-    //TODO: Make this do more than make a box of tiles with value 1
-    for (var y = 0; y < this.height; y++)
-    {
-        retTiles[y] = [];
-        for (var x = 0; x < this.width; x++)
-        {
-            if (x === 0 || x == this.width - 1 ||
-                y === 0 || y == this.height - 1)
-            {
-                retTiles[y].push(new gh.Tile(1));
-                continue;
-            }
-
-            retTiles[y].push(new gh.Tile(0));
-        }
-    }
-
-    return retTiles;
+    this.minimap = document.createElement('canvas');
+    this.minimap.width = this.width * this.tilesize / 4;
+    this.minimap.height = this.height * this.tilesize / 4;
+    this.minimapDirty = true;
 };
 
 gh.Map.prototype.GetTileFromWorld = function(x, y)
@@ -206,3 +186,109 @@ gh.Map.prototype.CheckCollision = function(x, y, width)
 
     return false;
 };
+
+gh.Map.prototype.RenderMinimap2D = function(ctx)
+{
+    var minimapTileHeight, minimapTileWidth;
+
+    if (ctx === undefined)
+    {
+        return;
+    }
+
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.globalAlpha = 0.8;
+
+    minimapTileHeight = ctx.canvas.height / this.height;
+    minimapTileWidth = ctx.canvas.width / this.width;
+
+    console.log(minimapTileHeight);
+
+    for (var y=0; y < this.height; y++)
+    {
+        for (var x=0; x < this.width; x++)
+        {
+            if (this.texturemap.ready)
+            {
+                if (this.tiles[y][x].type > 0)
+                {
+                    ctx.drawImage(this.texturemap.atlas,
+                        this.texturemap.SampleColumn(0,
+                        this.tiles[y][x].type-1), 0,
+                        this.texturemap.elementSize,
+                        this.texturemap.elementSize, x * minimapTileWidth,
+                        y * minimapTileHeight, minimapTileWidth,
+                        minimapTileHeight);
+                }
+            }
+            else
+            {
+                if (this.tiles[y][x].type > 0)
+                {
+                    ctx.fillRect(x * minimapTileWidth,
+                        y * minimapTileHeight, minimapTileWidth,
+                        minimapTileHeight);
+                }
+            }
+        }
+    }
+
+    ctx.globalAlpha = 1.0;
+};
+
+gh.Map.prototype.GetMinimapCanvas = function()
+{
+    var minimapCtx;
+
+    if (!this.minimapDirty)
+        return this.minimap;
+
+    if (this.minimap.getContext)
+    {
+        minimapCtx = this.minimap.getContext("2d");
+        this.RenderMinimap2D(minimapCtx);
+        this.minimapDirty = !this.texturemap.ready;
+    }
+
+    return this.minimap;
+};
+
+/***************************************
+ * Procedural Map Generation Functions *
+ ***************************************/
+
+gh.Map.prototype.generate_tiles = function()
+{
+    //TODO: Use parameters to come up with outside wall border type
+    var retTiles = gh.Tilegen.CreateOffices(this.width, this.height, 1);
+
+    return retTiles;
+};
+
+/*
+gh.Map.prototype.tilegen_blank = function(borderType)
+{
+    var retTiles = [];
+
+    for (var y = 0; y < this.height; y++)
+    {
+        retTiles[y] = [];
+        for (var x = 0; x < this.width; x++)
+        {
+            if (x === 0 || x == this.width - 1 ||
+                y === 0 || y == this.height - 1)
+            {
+                retTiles[y].push(new gh.Tile(borderType));
+                continue;
+            }
+
+            retTiles[y].push(new gh.Tile(0));
+        }
+    }
+
+    return retTiles;
+};
+*/

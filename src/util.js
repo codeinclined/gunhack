@@ -43,6 +43,7 @@ gh.NormalizeAngle = function(angle)
     return angle;
 };
 
+//TODO: Add support for passing null to min or max to make one-sided clamps
 gh.ClampValue = function(value, min, max)
 {
     if (min === undefined)
